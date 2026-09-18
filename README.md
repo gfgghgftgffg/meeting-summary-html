@@ -2,6 +2,8 @@
 
 A host-neutral skill for turning a meeting transcript, text file, or local audio/video file into a grounded, self-contained HTML meeting brief. It works with Codex, Claude, or another agent that can execute a local Python helper.
 
+![Rendered HTML meeting brief preview](docs/preview.png)
+
 ## What It Does
 
 The skill routes inputs automatically:
@@ -57,7 +59,7 @@ It also preserves timestamp anchors, mobile fallback, print styles, source groun
 
 ## Authentication
 
-Only media input requires an Alibaba Cloud Model Studio API key. Store it in an environment variable and never commit it:
+The API key is not stored in the skill or in any source file. `scripts/bailian_meeting_minutes.py` reads it from the environment variable `DASHSCOPE_API_KEY` by default. Only media input requires this key; text-only input does not call ASR and does not need credentials. Store it in an environment variable and never commit it:
 
 macOS/Linux:
 

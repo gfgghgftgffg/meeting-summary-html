@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GUI Agent 视觉触发攻击研究讨论 - 会议简报</title>
+<style>
+  :root { --paper:#e6f0f5; --sheet:#f8fcfe; --ink:#273642; --muted:#667782; --line:#cfdee6; --accent:#508cac; --accent-soft:#e3f1f7; --coral:#d18125; --coral-soft:#fff0db; --warm:#bc832c; --warm-soft:#f8f1e5; --open:#94651a; --measure:1100px; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",Arial,sans-serif; font-size:16px; line-height:1.72; }
+  .shell { max-width:1240px; margin:0 auto; padding:38px 48px 68px; background:var(--sheet); border-top:6px solid #7fb3cc; }
+  header { max-width:var(--measure); margin-left:auto; margin-right:auto; border-top:3px solid var(--accent); padding-top:13px; }
+  .label, .eyebrow, .stamp, th, .status-label { font-family:inherit; letter-spacing:0; }
+  .label { color:var(--muted); font-size:11px; font-weight:600; text-transform:uppercase; }
+  h1 { font-size:34px; line-height:1.33; font-weight:700; margin:7px 0 8px; letter-spacing:0; }
+  .metadata { margin:0; color:var(--muted); font-size:13px; }
+  .key-take { max-width:var(--measure); margin:24px auto 20px; border-left:4px solid var(--coral); padding:3px 0 3px 15px; font-size:17px; line-height:1.68; }
+  .status-strip { max-width:var(--measure); display:grid; grid-template-columns:repeat(3,1fr); border:1px solid var(--line); margin:0 auto 20px; font-size:14px; line-height:1.58; }
+  .status-strip div { padding:11px 14px 12px; min-width:0; }
+  .status-strip div:nth-child(1) { background:var(--accent-soft); }
+  .status-strip div:nth-child(2) { background:var(--coral-soft); }
+  .status-strip div:nth-child(3) { background:var(--warm-soft); }
+  .status-strip div + div { border-left:1px solid var(--line); }
+  .status-label { display:block; font-size:10px; font-weight:700; margin-bottom:1px; }
+  .confirmed { color:var(--accent); } .pending { color:var(--coral); } .open { color:var(--open); }
+  nav { max-width:var(--measure); margin-left:auto; margin-right:auto; position:sticky; top:0; z-index:2; background:rgba(248,252,254,.97); border-bottom:2px solid var(--accent); padding:8px 0; font-size:13px; }
+  nav a { color:var(--muted); text-decoration:none; margin-right:14px; white-space:nowrap; } nav a:hover { color:var(--accent); }
+  main { max-width:var(--measure); margin-left:auto; margin-right:auto; }
+  section { scroll-margin-top:38px; padding:35px 0 0; }
+  section + section { border-top:1px solid var(--line); margin-top:35px; }
+  h2 { font-size:24px; line-height:1.4; margin:0 0 17px; letter-spacing:0; color:#35687e; }
+  h2 .num { color:var(--accent); font-size:11px; margin-right:7px; vertical-align:middle; }
+  h3 { font-size:18px; line-height:1.45; margin:23px 0 8px; }
+  p { margin:0 0 11px; }
+  .source-note { color:var(--muted); font-size:12px; }
+  .chapters { list-style:none; padding:0; margin:0; }
+  .chapters li { display:grid; grid-template-columns:120px 1fr; gap:20px; padding:15px 0; border-top:1px solid var(--line); }
+  .stamp { color:var(--accent); font-size:12px; font-weight:700; padding-top:2px; }
+  .chapter-title { margin:0 0 3px; font-size:17px; font-weight:700; line-height:1.45; }
+  .chapter-outcome { color:var(--muted); font-size:14px; }
+  article + article { border-top:1px solid var(--line); margin-top:21px; padding-top:19px; }
+  #deep-dive article { display:grid; grid-template-columns:235px minmax(0,1fr); column-gap:34px; }
+  #deep-dive article h3 { grid-column:1; margin:0; }
+  #deep-dive article .reasoning, #deep-dive article .caution { grid-column:2; }
+  .anchor { color:var(--accent); font-size:12px; font-weight:700; }
+  .reasoning { margin:10px 0 0; padding:0; list-style:none; }
+  .reasoning li { margin:5px 0; padding-left:0; }
+  .reasoning b { font-size:14px; color:var(--accent); margin-right:6px; }
+  .caution { background:var(--warm-soft); border-left:4px solid var(--warm); padding:12px 15px; margin:17px 0; font-size:14px; }
+  .speaker { padding:13px 0; border-top:1px solid var(--line); }
+  .speaker h3 { margin:0 0 4px; }
+  .tree { margin:0; padding:0; list-style:none; }
+  .tree > li { border-left:3px solid var(--ink); padding:0 0 0 13px; }
+  .tree ul { list-style:none; padding:6px 0 0 14px; margin:7px 0 0; border-left:1px solid var(--line); }
+  .tree li { margin:6px 0; }
+  .badge { display:inline-block; border:1px solid currentColor; padding:0 5px; margin-right:5px; font-size:10px; line-height:1.45; font-weight:700; vertical-align:1px; }
+  table { width:100%; border-collapse:collapse; margin:10px 0 0; font-size:13px; }
+  th { color:var(--muted); text-align:left; font-size:11px; font-weight:700; padding:6px 10px 6px 0; border-bottom:2px solid var(--ink); }
+  td { vertical-align:top; padding:8px 10px 8px 0; border-bottom:1px solid var(--line); }
+  .recap-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 38px; }
+  .recap-grid h3 { font-size:17px; border-bottom:2px solid var(--accent); padding-bottom:5px; }
+  .recap-grid ul { padding-left:20px; margin:0; }
+  footer { max-width:var(--measure); margin:38px auto 0; border-top:1px solid var(--line); padding-top:10px; color:var(--muted); font-size:12px; }
+  @media (max-width:680px) { body { font-size:15px; } .shell { padding:24px 18px 42px; border-top-width:4px; } h1 { font-size:27px; } .key-take { font-size:16px; } .status-strip { grid-template-columns:1fr; } .status-strip div + div { border-left:0; border-top:1px solid var(--line); } .chapters li { grid-template-columns:1fr; gap:2px; } .recap-grid { grid-template-columns:1fr; gap:0; } #deep-dive article { display:block; } #deep-dive article h3 { margin:21px 0 8px; } nav { overflow-x:auto; white-space:nowrap; } table, thead, tbody, th, td, tr { display:block; } thead { display:none; } td { padding:6px 0; border-bottom:0; } tr { padding:8px 0; border-bottom:1px solid var(--line); } td::before { content:attr(data-label); display:block; color:var(--muted); font-size:10px; font-weight:700; } }
+  @media print { body { background:#fff; font-size:12pt; } .shell { max-width:none; padding:0; } nav { display:none; } section { break-inside:avoid; } a { color:inherit; text-decoration:none; } }
+  @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+</style>
+<style>
+  :root { --paper:#f7f1e8; --ink:#202326; --muted:#687078; --line:#202326; --blue:#b7dcef; --mint:#bfe8d6; --lilac:#d9cae7; --peach:#f6ceb5; --orange:#e49b3d; --white:#fffdf8; --measure:1180px; }
+  body { background:var(--paper); color:var(--ink); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; font-size:16px; line-height:1.7; }
+  .shell { max-width:1320px; padding:38px 42px 72px; background:transparent; border:0; }
+  header { max-width:var(--measure); border-top:0; padding-top:0; text-align:center; }
+  .label { display:inline-block; padding:3px 10px; border:2px solid var(--ink); border-radius:999px; background:var(--white); color:var(--ink); font-size:11px; transform:rotate(-1deg); }
+  h1 { font-size:37px; margin:12px 0 5px; line-height:1.28; color:#17191b; }
+  .metadata { font-size:14px; color:var(--muted); }
+  .key-take { max-width:var(--measure); margin:25px auto 20px; border:3px solid var(--ink); border-left:3px solid var(--ink); border-radius:18px 14px 19px 13px; background:var(--blue); padding:14px 20px; font-size:17px; box-shadow:5px 5px 0 rgba(32,35,38,.13); }
+  .status-strip { max-width:var(--measure); border:0; gap:18px; margin-bottom:23px; background:transparent; }
+  .status-strip div { border:3px solid var(--ink) !important; border-radius:15px 19px 13px 17px; padding:12px 15px; box-shadow:4px 4px 0 rgba(32,35,38,.12); }
+  .status-strip div:nth-child(1) { background:var(--mint); } .status-strip div:nth-child(2) { background:var(--peach); } .status-strip div:nth-child(3) { background:var(--lilac); }
+  .status-label { color:var(--ink) !important; font-size:12px; }
+  nav { max-width:var(--measure); background:transparent; border-bottom:0; padding:5px 0 17px; text-align:center; position:relative; }
+  nav a { display:inline-block; margin:0 6px 6px; padding:3px 9px; color:var(--ink); border-bottom:2px solid var(--orange); font-size:13px; }
+  nav a:hover { color:var(--ink); background:#ffe5bb; }
+  main { max-width:var(--measure); }
+  section { border:3px solid var(--ink) !important; border-radius:21px 15px 18px 13px; padding:27px 30px 30px; margin-top:24px !important; background:var(--white); box-shadow:6px 6px 0 rgba(32,35,38,.13); }
+  section:nth-of-type(1) { background:#eef8fc; transform:rotate(-.12deg); } section:nth-of-type(2) { background:#fbf3e6; } section:nth-of-type(3) { background:#f4eff9; transform:rotate(.08deg); } section:nth-of-type(4) { background:#edf8f1; } section:nth-of-type(5) { background:#fff4e9; } section:nth-of-type(6) { background:#eef5fb; }
+  h2 { color:var(--ink); font-size:26px; margin-bottom:17px; }
+  h2 .num { display:inline-flex; width:32px; height:32px; align-items:center; justify-content:center; margin-right:10px; border:2px solid var(--ink); border-radius:50%; background:var(--white); color:var(--ink); font-size:14px; vertical-align:2px; }
+  h3 { font-size:19px; color:var(--ink); }
+  .chapters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  .chapters li { display:block; min-height:178px; padding:17px; border:3px solid var(--ink); border-radius:16px 12px 18px 14px; background:var(--white); box-shadow:3px 3px 0 rgba(32,35,38,.1); }
+  .chapters li:nth-child(3n+1) { background:var(--blue); } .chapters li:nth-child(3n+2) { background:var(--mint); } .chapters li:nth-child(3n) { background:var(--lilac); }
+  .stamp { display:inline-block; color:var(--ink); font-size:12px; padding:2px 7px; border:2px solid var(--ink); border-radius:999px; background:var(--white); }
+  .chapter-title { font-size:17px; margin:12px 0 6px; } .chapter-outcome { color:#515a60; font-size:14px; }
+  #deep-dive article { display:block; padding:18px 20px; border:2px solid var(--ink); border-radius:13px 17px 14px 18px; background:rgba(255,253,248,.8); }
+  #deep-dive article + article { margin-top:18px; padding-top:18px; }
+  #deep-dive article h3 { margin:0 0 10px; } #deep-dive article .reasoning, #deep-dive article .caution { margin-left:0; }
+  .anchor { display:inline-block; color:var(--ink); background:#ffe3af; border-bottom:2px solid var(--orange); padding:0 4px; font-size:12px; }
+  .reasoning b { color:var(--ink); background:#d9edf7; padding:1px 4px; } .reasoning li { margin:8px 0; }
+  .caution { background:#fff0d7; border:2px solid var(--ink); border-left:5px solid var(--orange); border-radius:8px 12px 9px 11px; }
+  .speaker { padding:16px 0; border-top:2px dashed #5a5d5b; } .speaker h3 { display:inline-block; background:var(--blue); border:2px solid var(--ink); border-radius:999px; padding:2px 10px; }
+  .tree { font-size:15px; } .tree > li { border-left:3px solid var(--ink); } .tree ul { border-left:2px dashed #6b6f6c; }
+  .badge { border:2px solid var(--ink); border-radius:999px; color:var(--ink); background:var(--white); padding:1px 7px; }
+  table { background:var(--white); border:2px solid var(--ink); } th { color:var(--ink); background:var(--blue); border-bottom:2px solid var(--ink); } td { border-bottom:1px solid #9fa8aa; }
+  .recap-grid h3 { border-bottom:3px solid var(--orange); } footer { max-width:var(--measure); color:#4d565c; border-top:2px dashed var(--ink); }
+  @media (max-width:800px) { .shell { padding:25px 17px 48px; } h1 { font-size:29px; } .status-strip, .chapters { grid-template-columns:1fr; } .chapters li { min-height:0; } section { padding:21px 18px; } }
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+  <div class="label">会议纪要示例 / Fictional sample</div>
+  <h1>秋季社区读书会筹备讨论：从小型试办到可持续节奏</h1>
+  <p class="metadata">日期：2026/08/27（虚构） · 时长：约 56 分 15 秒 · 参与者：发言人 0、发言人 1</p>
+</header>
+<aside class="key-take">会议围绕秋季社区读书会的筹备展开。当前结论是先试办 12 人小型场，确认报名通道、场地设备和引导手册三项基础条件后再考虑扩大规模。讨论没有确认长期系列或固定预算。</aside>
+<aside class="status-strip" aria-label="会议状态索引">
+  <div><span class="status-label confirmed">已确认</span>先试办 12 人小型场；保留自由阅读与主题讨论两种形式。</div>
+  <div><span class="status-label pending">待验证</span>场地设备、报名表字段与志愿者接力的实际可行性。</div>
+  <div><span class="status-label open">待决</span>主题书单排序、领读人轮换方式与长期预算。</div>
+</aside>
+<nav aria-label="文档导航"><a href="#overview">全文概要</a><a href="#chapters">章节速览</a><a href="#deep-dive">详细讨论</a><a href="#speakers">发言总结</a><a href="#tree">观点树</a><a href="#recap">要点回顾</a></nav>
+<main>
+<section id="overview"><h2><span class="num">01</span>全文概要</h2>
+  <p>会议围绕秋季社区读书会的筹备展开。发言人 1 汇报：目前有 18 位居民表达兴趣，报名表已收到 9 份完整填写，场地可容纳 12 人，其中设备清单仍待确认。<em>签到</em>或<em>讨论</em>；其目前设想是先做小型试点，再判断是否扩展。与直接开展月度系列相比，具体执行成本在会中未被核实。</p>
+  <p>发言人 0 的核心判断是：仅凭兴趣名单还不足以支撑长期系列，应先确认场地设备、报名通道与志愿者分工。她认为小型试办更利于观察实际参与感，也能避免资源浪费。</p>
+  <p>讨论先尝试从书单结构、时长安排与领读人职责入手。发言人不建议一次安排过多环节，以免新手难以参与。</p>
+  <p>后半段讨论更具体：如果试办 12 人场，可在 90 分钟内设置 20 分钟自由介绍、40 分钟主题讨论和 25 分钟建议收集。志愿者接力可让一位负责签到，一位负责时间提醒，一位负责环境整理。</p>
+  <p>预算方面，发言人 0 倾向先用现有库存和免费场地，发言人 1 则提醒应保留少量应急支出。会议只讨论了试办思路与可能的报名节奏，未确认具体金额或报销方式。</p>
+</section>
+<section id="chapters"><h2><span class="num">02</span>章节速览</h2>
+<ol class="chapters">
+  <li><div class="stamp">00:00 - 06:20</div><div><p class="chapter-title">从兴趣表回到“这次先做什么”</p><p class="chapter-outcome">确认当前兴趣足够组织小型试点，但仍需明确场地和志愿者分工。</p></div></li>
+  <li><div class="stamp">06:20 - 13:45</div><div><p class="chapter-title">书单数量与讨论节奏的取舍</p><p class="chapter-outcome">讨论避免一次塞入过多书目，倾向先选 3 本短篇作为主题入口。</p></div></li>
+  <li><div class="stamp">13:45 - 26:20</div><div><p class="chapter-title">场地设备、报名表字段与志愿者分工</p><p class="chapter-outcome">决定试办先解决基本条件；不追求复杂流程。</p></div></li>
+  <li><div class="stamp">26:20 - 36:35</div><div><p class="chapter-title">领读人职责：引导而非讲授</p><p class="chapter-outcome">提出领读人应以问题串引导讨论，避免变成单向讲解。</p></div></li>
+  <li><div class="stamp">36:35 - 42:49</div><div><p class="chapter-title">90 分钟流程模板的可行性</p><p class="chapter-outcome">将自由介绍、主题讨论和建议收集纳入同一时段，便于复盘。</p></div></li>
+  <li><div class="stamp">42:49 - 51:52</div><div><p class="chapter-title">试点优先于快速扩张</p><p class="chapter-outcome">同意先测报名、设备和引导手册；预算与扩展待后续讨论。</p></div></li>
+  <li><div class="stamp">51:52 - 56:15</div><div><p class="chapter-title">试办反馈决定后续节奏</p><p class="chapter-outcome">同意先在下次会议前确认设备可用性；预算与署名只是意见交换。</p></div></li>
+</ol>
+</section>
+<section id="deep-dive"><h2><span class="num">03</span>详细讨论</h2>
+<article><h3>1. 当前证据与试办定位<span class="anchor">00:00:05 · 02:37 · 05:58</span></h3>
+<ul class="reasoning"><li><b>背景与问题</b>现有兴趣名单和报名表显示有足够居民参与小型读书会，但场地与志愿者能力尚待核实。</li><li><b>讨论与论证</b>发言人 0 将“先试办”与“长期系列”分开：前者只需最低限度准备，后者需要稳定预算和人员机制。</li><li><b>当前结论</b>当前应以 12 人小型试点为主，不作为长期承诺。</li><li><b>依据锚点</b>发言人 1 在<span class="anchor">00:00:05</span>报告报名情况；发言人 0 在<span class="anchor">00:02:37</span>、<span class="anchor">00:06:21</span>说明试办优先。</li></ul></article>
+<article><h3>2. 从兴趣表到可执行的报名机制<span class="anchor">00:03:27 · 13:13 · 24:11</span></h3>
+<ul class="reasoning"><li><b>背景与问题</b>报名表已收集 9 份完整填写，但缺少联系方式以外的紧急联系人字段。</li><li><b>讨论与论证</b>发言人 1 建议增加到场确认和特殊需求说明字段，以便志愿者准备座位与饮品。发言人 0 认可这是必要准备，但要求避免问卷过长。</li><li><b>当前结论</b>报名表可在下次会议前完成字段补充，不新增复杂问卷。</li><li><b>依据锚点</b><span class="anchor">00:13:13</span>为字段补充的讨论来源；<span class="anchor">00:24:11-00:25:18</span>为到场确认说明。</li></ul></article>
+<article><h3>3. 场地设备与志愿者分工的边界<span class="anchor">00:21:08 · 26:35 · 29:53</span></h3>
+<ul class="reasoning"><li><b>背景与问题</b>场地可容纳 12 人，但投影仪与桌椅布局尚未确认。发言人 0 因而提出先完成设备清单与岗位清单。</li><li><b>讨论与论证</b>发言人 1 提出按“签到、时间提醒、环境整理”三岗接力，避免同一人承担过多职责。发言人 0 补充应预留机动岗。</li><li><b>当前结论</b>设备核查与岗位清单成为试办前必做事项，暂不讨论长期预算。</li><li><b>依据锚点</b><span class="anchor">00:21:08</span>提出设备清单；<span class="anchor">00:22:02</span>讨论岗位分工；<span class="anchor">00:29:53-00:36:00</span>讨论备用座位和机动岗。</li></ul></article>
+<article><h3>4. 90 分钟流程的真正挑战是节奏控制<span class="anchor">00:36:29 · 37:55 · 40:27</span></h3>
+<ul class="reasoning"><li><b>背景与问题</b>试办场需兼顾新老读者的参与感，避免单向讲述或讨论发散。仅靠领读人“自行理解”节奏，也容易让新手沉默。</li><li><b>讨论与论证</b>发言人 0 建议将讨论时间分为两段：前段围绕主题，后段收集个人经验与建议。发言人 1 认为这比一次长讨论更可控。</li><li><b>当前结论</b>“20 分钟介绍 + 40 分钟主题讨论 + 25 分钟建议收集”被视为最有潜力的试办模板。</li><li><b>依据锚点</b><span class="anchor">00:37:55</span>说明分段理由；<span class="anchor">00:40:27-00:42:48</span>确认试办模板方向。</li></ul></article>
+<article><h3>5. 试办之后的扩展路径<span class="anchor">00:46:41 · 48:02 · 51:03</span></h3>
+<ul class="reasoning"><li><b>背景与问题</b>会议讨论是否在试点成功后进入月度系列，以及是否需要更多领读人。</li><li><b>讨论与论证</b>发言人 0 主张以“参与人数、讨论质量、志愿者可持续性”为复盘标准，而非单次活动效果。发言人 1 同意先积累一次完整试办数据。</li><li><b>当前结论</b>扩展仍属待决事项，需以试点反馈为准。</li><li><b>依据锚点</b><span class="anchor">00:46:41</span>提出复盘标准；<span class="anchor">00:48:02-00:49:08</span>讨论月度系列；<span class="anchor">00:51:03</span>确认先做试点。</li></ul>
+<aside class="caution">注意：本页所有人物、时间、数字与结论均为虚构示例，不对应真实会议记录。</aside></article>
+</section>
+<section id="speakers"><h2><span class="num">04</span>发言总结</h2>
+<div class="speaker"><h3>发言人 0</h3><p>主要承担流程与风险评估角色。其立场从“先试办小型场”出发，持续追问报名、场地、志愿者可持续性和复盘标准。其观点在后半程更明确：试点不追求规模，而应先验证设备与岗位分工。其可归属的建议是优先完成三项基础准备，再讨论扩展；并未承诺具体预算或日期。</p></div>
+<div class="speaker"><h3>发言人 1</h3><p>主要报告当前资源与约束：报名表 9 份，兴趣 18 人，场地容量 12 人；其现有分工建议优先保障签到与时间提醒。发言人 1 对长期系列、复杂报名流程和额外支出持保留意见。其明确承诺是于下次会议前先确认设备可用性（相对时间，未换算为公历日期）。</p></div>
+</section>
+<section id="tree"><h2><span class="num">05</span>观点树</h2>
+<ul class="tree"><li><strong>中心问题：如何把社区读书会的初步兴趣，发展为可持续的小型试办活动？</strong><ul>
+  <li><span class="badge confirmed">已确认</span>小型试办已有初步依据<ul><li>报名表已收集 9 份完整填写。</li><li>场地可容纳 12 人；兴趣人数约 18 人。</li></ul></li>
+  <li><span class="badge pending">提议</span>报名机制与设备核查<ul><li>补充到场确认和特殊需求说明字段。</li><li>确认桌椅、投影仪与备用座位布局。</li></ul></li>
+  <li><span class="badge pending">提议</span>90 分钟流程模板<ul><li>自由介绍、主题讨论与建议收集分段进行。</li><li>领读人以问题串引导，避免单向讲解。</li></ul></li>
+  <li><span class="badge open">待决</span>长期系列与预算<ul><li>月度系列需稳定的预算与人员机制。</li><li>试办反馈是否足以支撑扩展仍待复盘。</li></ul></li>
+  <li><span class="badge open">风险</span>志愿者可持续性与讨论质量<ul><li>若同一人承担过多岗位，容易影响体验。</li><li>若书单过重，新手可能难以参与。</li></ul></li>
+</ul></li></ul>
+</section>
+<section id="recap"><h2><span class="num">06</span>要点回顾</h2>
+<div class="recap-grid"><div><h3>已确认结果</h3><ul><li>当前兴趣和报名表足以组织 12 人小型试办。</li><li>场地容量可满足试办需求，但设备待核查。</li><li>先做试点，不立即扩展为长期系列。</li></ul></div><div><h3>行动项</h3><table><thead><tr><th>事项</th><th>负责人</th><th>时间</th></tr></thead><tbody><tr><td data-label="事项">补充报名表字段并确认特殊需求说明</td><td data-label="负责人">发言人 1</td><td data-label="时间">下次会议前</td></tr><tr><td data-label="事项">核查场地设备与备用座位布局</td><td data-label="负责人">发言人 0（讨论中接受尝试）</td><td data-label="时间">未明确</td></tr><tr><td data-label="事项">根据试办反馈决定是否扩展为月度系列</td><td data-label="负责人">未明确</td><td data-label="时间">未明确</td></tr></tbody></table></div><div><h3>风险与分歧</h3><ul><li>现有兴趣是否足以支撑长期系列仍有分歧。</li><li>设备核查与岗位分工将增加前期准备成本。</li><li>领读人轮换方式尚未形成一致意见。</li></ul></div><div><h3>未解问题</h3><ul><li>如何量化小型试办的成功标准？</li><li>志愿者三岗接力能否覆盖完整 90 分钟流程？</li><li>书单数量与讨论深度之间如何取舍？</li><li>长期系列是否需要额外预算或固定领读人？</li></ul></div></div>
+</section>
+</main>
+<footer>基于<code>虚构会议记录.md</code>生成。所有人物、时间与数字均为示例，不对应真实会议记录。</footer>
+</div>
+</body>
+</html>

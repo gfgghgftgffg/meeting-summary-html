@@ -1,90 +1,109 @@
 # Meeting Summary HTML
 
-A Codex skill for turning complete meeting transcripts in any language into grounded, readable, self-contained HTML meeting briefs.
+A host-neutral skill for turning a meeting transcript, text file, or local audio/video file into a grounded, self-contained HTML meeting brief. It works with Codex, Claude, or another agent that can execute a local Python helper.
 
-The skill preserves the depth of the source while making the meeting easy to read at three levels: a quick overview, a structured scan, and a detailed research read.
+## What It Does
 
-## Preview
+The skill routes inputs automatically:
 
-This is the actual rendered preview of the example HTML included in this repository:
+1. Text-like inputs are read directly. No ASR call is made.
+2. Audio and video inputs are sent to Alibaba Cloud Model Studio only when transcription is needed.
+3. Mixed input lists are supported; only media files are transcribed.
+4. The prepared transcript is passed through the original long-form HTML meeting-summary workflow.
 
-![Meeting Summary HTML example preview](docs/preview.png)
+This means users do not need to operate a separate CLI or manually decide whether Bailian is required. The CLI-compatible Python files remain as implementation helpers, but the main interface is the skill workflow.
 
-Open the full example here:
+## Supported Inputs
 
-- [Example HTML](examples/transcript-summary-sketch.html)
-- [Project entry page](index.html)
+Text-like files:
 
-## What It Produces
+- Markdown
+- Plain text
+- SRT subtitles
+- VTT subtitles
+- JSON transcripts
 
-Each generated brief uses the source transcript as its grounding and keeps confirmed outcomes separate from proposals, hypotheses, risks, and unresolved questions.
+Media files:
 
-### 1. Header and Meeting Metadata
+- AAC, AMR, AVI, FLAC, FLV
+- M4A, MKV, MOV, MP3, MP4, MPEG
+- OGG, OPUS, WAV, WEBM, WMA, WMV
 
-The document opens with the meeting topic, date, duration, participants, and other source-grounded metadata.
+## Workflow
 
-### 2. Full-Meeting Overview
+The skill first runs the bundled preparation helper:
 
-A concise narrative explains the meeting purpose, the main reasoning arc, the current state, and the most consequential next steps.
+~~~text
+python scripts/prepare_meeting_input.py --input <path> --output-dir <work-directory>
+~~~
 
-### 3. Chapter-at-a-Glance
+Use python3 on macOS or Linux when needed. Repeat --input for multiple files. The helper prints a JSON manifest with the normalized transcript path, source files, detected input kinds, and whether Alibaba Cloud ASR was used.
 
-A chronological scan lists every major chapter with start and end timestamps, a conclusion-oriented title, and a substantive preview of the discussion and its outcome.
+The agent then reads the complete transcript and generates the HTML brief using the bundled reference at references/summary-meeting-html.md. The original visual reference is preserved at references/transcript-summary-sketch.html.
 
-### 4. Theme-Based Deep Dive
+## Generated Brief Structure
 
-The detailed analysis groups the conversation by theme rather than merely repeating the transcript. Each substantial theme can cover:
+The HTML output contains:
 
-- context and the underlying problem;
-- positions, arguments, disagreement, and reasoning;
-- evidence, examples, and timestamp anchors;
-- current conclusion, validation status, and unresolved questions.
+- Header and meeting metadata
+- Full-meeting overview
+- Chapter-at-a-glance
+- Theme-based deep dive
+- Speaker summaries
+- Viewpoint tree
+- Closing recap with confirmed outcomes, action items, risks, and unresolved questions
 
-### 5. Speaker Summaries
+It also preserves timestamp anchors, mobile fallback, print styles, source grounding, and the distinction between confirmed and unconfirmed content.
 
-The brief preserves meaningful differences between speakers, including their roles, evidence, changes of view, commitments, and attributable follow-up. Empty or unsupported fields are omitted.
+## Authentication
 
-### 6. Viewpoint Tree
+Only media input requires an Alibaba Cloud Model Studio API key. Store it in an environment variable and never commit it:
 
-An accessible native HTML and CSS tree maps the meeting's central question or workstream to its main positions, confirmed facts, proposals, constraints, risks, consequences, and open questions.
+macOS/Linux:
 
-### 7. Closing Recap
+~~~sh
+export DASHSCOPE_API_KEY="your-api-key"
+~~~
 
-The final section brings together confirmed outcomes, action items, owners and dates when grounded, risks or disagreements, and unresolved questions. Actions are presented in a readable table with a mobile fallback.
+Windows PowerShell:
 
-## Design and Delivery
+~~~powershell
+$env:DASHSCOPE_API_KEY = "your-api-key"
+~~~
 
-- Works with transcripts in any language; the output language follows the source and task context.
-- Self-contained HTML with inline CSS and no server, CDN, external font, image, JavaScript package, or network request.
-- Responsive layout for desktop and mobile reading.
-- Print-friendly styles for archival or PDF output.
-- Timestamp anchors and semantic headings support navigation and source verification.
-- Visual signposts clarify structure without replacing the underlying discussion.
+Use --api-key-env to select another variable name. Text-only inputs do not require this variable.
 
-## Usage
+## Privacy
 
-After installing this repository as a Codex skill, use:
+Audio and video files are uploaded to Alibaba Cloud temporary storage for ASR. Check the provider retention and processing terms before using this skill with sensitive meetings. Text-only inputs remain local during preparation. Revoke any API key that has ever been exposed in source code or chat history.
 
-```text
-Use $summary-meeting-html to turn this transcript into a readable, self-contained HTML meeting brief.
-```
+## Development
 
-The skill generates `<transcript-stem>-summary.html` and requires complete chronological coverage of the meeting, grounded action ownership and dates, and a clear distinction between confirmed and unconfirmed content.
+The deterministic helper uses Python standard-library modules and is cross-platform. Run the offline tests with:
+
+~~~sh
+python -m unittest discover -s tests -v
+~~~
+
+The example page can be opened directly as index.html.
 
 ## Repository Layout
 
-```text
+~~~text
 .
 |-- SKILL.md
-|-- agents/
-|   `-- openai.yaml
-|-- examples/
+|-- agents/openai.yaml
+|-- scripts/
+|   |-- prepare_meeting_input.py
+|   `-- bailian_meeting_minutes.py
+|-- references/
+|   |-- summary-meeting-html.md
 |   `-- transcript-summary-sketch.html
-|-- docs/
-|   `-- preview.png
+|-- examples/transcript-summary-sketch.html
+|-- docs/preview.png
 `-- index.html
-```
+~~~
 
-## Note
+## License
 
-The people, dates, numbers, and conclusions in the example page are fictional and are included only to demonstrate the structure and visual treatment.
+MIT.

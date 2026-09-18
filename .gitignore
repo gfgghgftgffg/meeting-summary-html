@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.mp4
+*.mov
+*.mkv
+meeting-transcript.raw.json
+transcript.md
+transcript-summary.html

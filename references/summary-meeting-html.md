@@ -27,7 +27,7 @@ Do not make a long meeting a flat list or a chronological transcript rewrite. Fo
 
 Write `<transcript-stem>-summary.html` next to the input transcript. Use UTF-8 and include all CSS in the file. The document must work by opening it directly in a browser: no server, CDN, external font, image, JavaScript package, or network request.
 
-Use [examples/transcript-summary-sketch.html](examples/transcript-summary-sketch.html) as a visual and structural reference. Read it before writing output. Reuse its successful long-form patterns where appropriate: the header, status index, navigation, chapter scan, argument tree, action table, mobile fallback, and print styles. It is an example, not a locked template: adapt composition, visual annotations, and local components to make the meeting's reasoning easier to understand.
+If layout guidance is useful, consult [transcript-summary-sketch.html](transcript-summary-sketch.html) as an optional visual and structural example. Reuse its long-form patterns where appropriate: the header, status index, navigation, chapter scan, argument tree, action table, mobile fallback, and print styles. It is not a locked template: adapt composition, visual annotations, and local components to make the meeting's reasoning easier to understand.
 
 Keep the complete meeting structure, in this order. When a supplied Markdown brief already has a fuller structure, preserve its substantive sections and subheadings rather than compressing them into fewer HTML sections:
 
@@ -82,4 +82,4 @@ Use the CSS architecture and responsive safeguards in the reference template as 
 
 Before writing, verify that all seven content areas are present, the chapters cover the source in order through its final timestamp, each chapter has an outcome or open state, the action owners and dates are grounded, and the opening narrative agrees with the detailed analysis. In detailed mode, verify that the detailed analysis has more explanatory substance than the overview and retains timestamp anchors.
 
-Inspect the generated HTML as text for correct nesting, working internal anchor targets, preserved heading hierarchy, and a mobile media query. If browser tooling is available, open the local file and inspect desktop and mobile screenshots for overflow, clipped text, unreadable contrast, and excessive visual density.
+Inspect the generated HTML as text for correct nesting, working internal anchor targets, preserved heading hierarchy, and a mobile media query. When layout complexity or observed overflow warrants it and browser tooling is available, inspect desktop and mobile views for clipped text, unreadable contrast, and excessive visual density.

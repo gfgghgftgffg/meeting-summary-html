@@ -31,7 +31,7 @@ After the helper finishes, read the complete transcript at transcript_path.
 
 ## Generate the HTML Brief
 
-Read [references/summary-meeting-html.md](references/summary-meeting-html.md) before drafting. It contains the full long-form HTML requirements from the original meeting-summary-html skill. Use [references/transcript-summary-sketch.html](references/transcript-summary-sketch.html) as the visual and structural reference.
+Read [references/summary-meeting-html.md](references/summary-meeting-html.md) before drafting. It contains the full long-form HTML requirements from the original meeting-summary-html skill.
 
 Write the final HTML beside the prepared transcript unless the user specifies another location. Keep the generated HTML self-contained: inline CSS, no CDN, no external font, no network request, and no required JavaScript package.
 

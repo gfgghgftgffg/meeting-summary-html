@@ -2,3 +2,6 @@ interface:
   display_name: "Meeting Summary HTML"
   short_description: "Turn text or audio into a grounded HTML meeting brief"
   default_prompt: "Use $meeting-summary-html to detect this input, transcribe audio only when necessary, and create a complete self-contained HTML meeting brief."
+
+policy:
+  allow_implicit_invocation: false

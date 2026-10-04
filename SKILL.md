@@ -1,5 +1,6 @@
 ---
 name: meeting-summary-html
+disable-model-invocation: true
 description: Create a grounded, self-contained HTML meeting brief from a transcript, text file, or local audio/video input. Detect the input type first and call Alibaba Cloud ASR only when media must be transcribed.
 ---
 

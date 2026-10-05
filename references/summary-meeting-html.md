@@ -7,11 +7,13 @@ description: "Create a complete, grounded Chinese meeting brief as a polished se
 
 Create a self-contained HTML meeting brief that is pleasant to read for a human, while preserving the analytical depth of a detailed meeting summary. This is a document deliverable, not a landing page or a dashboard.
 
+The invoking agent reads, analyzes, and authors in its current host session using native tools; do not launch another agent/LLM CLI or switch summarization models/providers. Resolve bundled resources from the directory containing the loaded `SKILL.md` (the example link below remains relative to this reference), not the shell working directory.
+
 The brief must work at three reading depths: a one-minute reader can rely on the overview and concise status index; a scanning reader can use the chapter overview; and a research reader can follow the detailed discussion, speaker positions, and recap without returning to the transcript.
 
 ## Grounding
 
-- Read the complete supplied transcript before drafting. Preserve speaker names, timestamps, and uncertainty.
+- Read the complete supplied transcript before drafting. Continue with host read offsets/chunks through any truncation (including Pi read output). Preserve speaker names, timestamps, and uncertainty.
 - For transcripts longer than 20 minutes or 12,000 characters, read chronological chunks with explicit boundaries. Use 60-120 seconds of overlap at every boundary; record each chunk's first and last timestamp and note any topic that continues across it.
 - Synthesize chapters by topic, decision, experiment, or shift in reasoning. A read boundary is never by itself a chapter boundary. Resolve overlap before writing so an argument is not split or repeated.
 - Before delivery, identify the source's final timestamp and verify that the final chronological chapter reaches it. Do not state a shorter meeting duration because a read was truncated.
@@ -25,7 +27,7 @@ Do not make a long meeting a flat list or a chronological transcript rewrite. Fo
 
 ## Deliverable
 
-Write `<transcript-stem>-summary.html` next to the input transcript. Use UTF-8 and include all CSS in the file. The document must work by opening it directly in a browser: no server, CDN, external font, image, JavaScript package, or network request.
+Write `<transcript-stem>-summary.html` in the chosen user output directory, next to the input transcript if no other location is requested; never default to the skill installation directory. Resolve supplied input/output paths against the invoking session's working directory before any optional directory change. Use UTF-8 and include all CSS in the file. The document must work by opening it directly in a browser: no server, CDN, external font, image, JavaScript package, or network request.
 
 Read [examples/transcript-summary-sketch.html](../examples/transcript-summary-sketch.html) before writing output and match its appearance as closely as possible. When the meeting has more content or discussion themes, extend its colors and sections while preserving the same visual style.
 
